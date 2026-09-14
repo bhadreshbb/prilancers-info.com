@@ -1064,26 +1064,30 @@
           </div>
         </div>
 
-        <form class="lead-form" id="leadForm">
+           <form class="lead-form" id="leadForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="PASTE-YOUR-WEB3FORMS-ACCESS-KEY-HERE">
+          <input type="hidden" name="subject" value="New Lead from Prilancers Website">
+          <input type="hidden" name="from_name" value="Prilancers Website Form">
+          <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
           <div id="formFields">
             <div class="form-row">
               <div class="field">
                 <label for="fname">Name</label>
-                <input type="text" id="fname" name="fname" placeholder="Your name" required>
+                <input type="text" id="fname" name="Name" placeholder="Your name" required>
               </div>
               <div class="field">
                 <label for="fphone">WhatsApp Number</label>
-                <input type="tel" id="fphone" name="fphone" placeholder="+91 00000 00000" required>
+                <input type="tel" id="fphone" name="WhatsApp Number" placeholder="+91 00000 00000" required>
               </div>
             </div>
             <div class="form-row">
               <div class="field">
                 <label for="fbiz">Business / Website</label>
-                <input type="text" id="fbiz" name="fbiz" placeholder="Business name or website link">
+                <input type="text" id="fbiz" name="Business / Website" placeholder="Business name or website link">
               </div>
               <div class="field">
                 <label for="fbudget">Monthly Ad Budget</label>
-                <select id="fbudget" name="fbudget">
+                <select id="fbudget" name="Monthly Ad Budget">
                   <option>₹20,000 – ₹50,000</option>
                   <option>₹50,000 – ₹1,50,000</option>
                   <option>₹1,50,000 – ₹5,00,000</option>
@@ -1093,7 +1097,7 @@
             </div>
             <div class="field">
               <label for="fmsg">Message</label>
-              <textarea id="fmsg" name="fmsg" placeholder="Tell us a little about your business and goals..."></textarea>
+              <textarea id="fmsg" name="Message" placeholder="Tell us a little about your business and goals..."></textarea>
             </div>
             <button type="submit" class="btn btn-flame btn-block">Book a Free Strategy Call</button>
             <p class="form-note">As soon as you submit, your request goes straight to our team.</p>
@@ -1255,6 +1259,39 @@
     document.getElementById('formFields').style.display = 'none';
     document.getElementById('formSuccess').style.display = 'block';
   });
+
+
+    const form = document.getElementById('leadForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      const result = await response.json();
+      if (result.success) {
+        document.getElementById('formFields').style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      } else {
+        alert('Something went wrong. Please try again or WhatsApp us directly.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      alert('Network error. Please check your connection and try again.');
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+
 </script>
 
 </body>
