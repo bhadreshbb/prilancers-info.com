@@ -262,6 +262,8 @@
   .reel.r2 .reel-media{background:radial-gradient(circle at 70% 20%,#5a4514 0%,#151d30 62%);}
   .reel.r3 .reel-media{background:radial-gradient(circle at 50% 15%,#14472d 0%,#151d30 62%);}
   .reel-media img,.reel-media video{width:100%;height:100%;object-fit:cover;display:block;}
+  .reel-media video{background:#0B1220;pointer-events:none;}
+
   .reel-shade{
     position:absolute;left:0;right:0;bottom:0;height:55%;
     background:linear-gradient(180deg,rgba(11,18,32,0) 0%,rgba(11,18,32,.88) 100%);
@@ -691,34 +693,41 @@
     </div>
   </section>
 
-  <!-- CLIENT VIDEO TESTIMONIALS (3 reels)
-       Paste each video link into data-video="".
-       Works with: YouTube / YouTube Shorts, Instagram Reel, Vimeo, Google Drive share link, or a direct .mp4 link.
-       Optional: add a cover image with data-thumb="images/reel-1.jpg" -->
+  <!-- CLIENT VIDEO TESTIMONIALS
+       These videos are local files in the same GitHub repository as index.html.
+       Upload: client-1.mp4, client-2.mp4, client-3.mp4 -->
   <section class="reels-sec" id="testimonials" aria-labelledby="reelsTitle">
     <div class="wrap">
       <div class="reels-head">
         <h2 id="reelsTitle">Hear it from our clients</h2>
-        <p>Tap a reel to watch.</p>
+        <p>Real client experiences with Prilancers.</p>
       </div>
       <div class="reels-track">
-        <button type="button" class="reel r1" data-video="" data-thumb="" aria-label="Play video testimonial from Rohan, D2C skincare brand">
-          <span class="reel-media" aria-hidden="true"></span>
+        <button type="button" class="reel r1" data-video="client-1.mp4" aria-label="Watch client video testimonial 1">
+          <span class="reel-media">
+            <video src="client-1.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Client testimonial video 1"></video>
+          </span>
           <span class="reel-shade" aria-hidden="true"></span>
           <span class="reel-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l14 8-14 8z"/></svg></span>
-          <span class="reel-meta"><b>Rohan</b><small>D2C Skincare</small></span>
+          <span class="reel-meta"><b>Client Testimonial</b><small>Watch their experience</small></span>
         </button>
-        <button type="button" class="reel r2" data-video="" data-thumb="" aria-label="Play video testimonial from Fatima, fashion brand in Dubai">
-          <span class="reel-media" aria-hidden="true"></span>
+
+        <button type="button" class="reel r2" data-video="client-2.mp4" aria-label="Watch client video testimonial 2">
+          <span class="reel-media">
+            <video src="client-2.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Client testimonial video 2"></video>
+          </span>
           <span class="reel-shade" aria-hidden="true"></span>
           <span class="reel-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l14 8-14 8z"/></svg></span>
-          <span class="reel-meta"><b>Fatima</b><small>Fashion, Dubai</small></span>
+          <span class="reel-meta"><b>Client Testimonial</b><small>Watch their experience</small></span>
         </button>
-        <button type="button" class="reel r3" data-video="" data-thumb="" aria-label="Play video testimonial from Aditi, ed-tech startup">
-          <span class="reel-media" aria-hidden="true"></span>
+
+        <button type="button" class="reel r3" data-video="client-3.mp4" aria-label="Watch client video testimonial 3">
+          <span class="reel-media">
+            <video src="client-3.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Client testimonial video 3"></video>
+          </span>
           <span class="reel-shade" aria-hidden="true"></span>
           <span class="reel-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l14 8-14 8z"/></svg></span>
-          <span class="reel-meta"><b>Aditi</b><small>Ed-Tech</small></span>
+          <span class="reel-meta"><b>Client Testimonial</b><small>Watch their experience</small></span>
         </button>
       </div>
     </div>
@@ -1495,7 +1504,10 @@
       el.src = info.src;
       el.controls = true;
       el.autoplay = true;
+      el.muted = false;
       el.playsInline = true;
+      el.setAttribute('playsinline', '');
+      el.setAttribute('webkit-playsinline', '');
     } else {
       el = document.createElement('iframe');
       el.src = info.src;
@@ -1517,34 +1529,58 @@
     if (reelOpener) reelOpener.focus();
   }
 
+  // Local GitHub-hosted client videos: muted autoplay + loop + inline playback.
+  // The browser can autoplay these because they are muted.
+  const reelVideos = document.querySelectorAll('.reel-media video');
+
+  reelVideos.forEach(video => {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.autoplay = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+    video.setAttribute('playsinline', '');
+
+    const startPlayback = () => {
+      video.play().catch(() => {
+        // Some browsers delay autoplay until the page becomes visible/interacted with.
+      });
+    };
+
+    if (video.readyState >= 2) {
+      startPlayback();
+    } else {
+      video.addEventListener('loadeddata', startPlayback, { once: true });
+    }
+  });
+
+  // Pause videos while the testimonial section is off-screen and resume when visible.
+  // This keeps autoplay smooth without wasting bandwidth while the section is hidden.
+  if ('IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          video.muted = true;
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.25 });
+
+    reelVideos.forEach(video => videoObserver.observe(video));
+  }
+
   document.querySelectorAll('.reel').forEach(btn => {
     const url = (btn.dataset.video || '').trim();
     const info = url ? parseVideo(url) : null;
-    const media = btn.querySelector('.reel-media');
-    const thumb = (btn.dataset.thumb || '').trim() || (info && info.thumb) || '';
-
-    // cover image, or the first frame of a direct video file
-    if (thumb) {
-      const img = document.createElement('img');
-      img.src = thumb;
-      img.alt = '';
-      img.loading = 'lazy';
-      media.appendChild(img);
-    } else if (info && info.type === 'video') {
-      const v = document.createElement('video');
-      v.src = info.src + '#t=0.1';
-      v.muted = true;
-      v.playsInline = true;
-      v.preload = 'metadata';
-      media.appendChild(v);
-    }
 
     btn.addEventListener('click', () => {
-      if (!info) return;                       // no link added yet
-      if (info.type === 'link') {              // unknown site: open in a new tab
-        window.open(info.src, '_blank', 'noopener');
-        return;
-      }
+      if (!info) return;
       openReel(info, btn);
     });
   });
